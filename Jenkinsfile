@@ -1,12 +1,19 @@
 pipeline {
     agent any
+
     tools {
-        maven 'maven'
+        maven 'maven' // Maven tool configured in Jenkins
     }
+
+    environment {
+        TOMCAT_HOME = "/tmp/tomcat" // Update if your Tomcat path is different
+    }
+
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean install package'
+                echo "Building project..."
+                sh 'mvn clean package'
             }
         }
 
@@ -24,12 +31,12 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo "Testing..."
-                // Add actual test commands if needed
+                echo "Running tests..."
+                sh 'mvn test'
             }
         }
 
-        stage('Print Environment variables') {
+        stage('Print Environment Variables') {
             steps {
                 echo "Artifact ID: ${env.ArtifactId}"
                 echo "Group ID: ${env.GroupId}"
@@ -38,11 +45,36 @@ pipeline {
             }
         }
 
-        stage('Deploy to Docker') {
+        stage('Deploy to Tomcat') {
             steps {
-                echo 'Deploying...'
-                // Add your Docker deployment commands here
+                echo "Deploying WAR to Tomcat..."
+                sh """
+                    cp target/${ArtifactId}-${Version}.war ${TOMCAT_HOME}/webapps/
+                    echo "WAR copied to ${TOMCAT_HOME}/webapps/"
+                """
             }
+        }
+
+        stage('Expose Target Folder') {
+            steps {
+                echo "Copying target folder to Tomcat for external access..."
+                sh """
+                    rm -rf ${TOMCAT_HOME}/webapps/target
+                    cp -r target ${TOMCAT_HOME}/webapps/
+                    echo "Target folder exposed at http://<server-ip>:8080/target/"
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully! Access your app at:"
+            echo "WAR: http://<server-ip>:8080/${ArtifactId}-${Version}/"
+            echo "Target folder: http://<server-ip>:8080/target/"
+        }
+        failure {
+            echo "Pipeline failed. Check the Jenkins console for errors."
         }
     }
 }
