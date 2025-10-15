@@ -25,30 +25,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Testing..."
-            }
-        }
-
-        stage('Publish to Nexus') {
-            steps {
-                script {
-                    def NexusRepo = env.Version.endsWith("SNAPSHOT") ? "MyLab-SNAPSHOT" : "MyLab-RELEASE"
-
-                    nexusArtifactUploader artifacts: [
-                        [
-                            artifactId: env.ArtifactId,
-                            classifier: '',
-                            file: "target/${env.ArtifactId}-${env.Version}.war",
-                            type: 'war'
-                        ]
-                    ],
-                    credentialsId: 'nexus',
-                    groupId: env.GroupId,
-                    nexusUrl: '10.0.0.167:8081',
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    repository: NexusRepo,
-                    version: env.Version
-                }
+                // Add actual test commands if needed
             }
         }
 
@@ -64,6 +41,7 @@ pipeline {
         stage('Deploy to Docker') {
             steps {
                 echo 'Deploying...'
+                // Add your Docker deployment commands here
             }
         }
     }
