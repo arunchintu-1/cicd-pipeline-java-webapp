@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        TOMCAT_HOME = "/tmp/tomcat" // Update if your Tomcat path is different
+        TOMCAT_HOME = "/opt/tomcat" // Update if your Tomcat path is different
     }
 
     stages {
